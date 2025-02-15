@@ -12,6 +12,11 @@ const loadingProducts = ref({});
 const isLoggedIn = ref(false); 
 const showDropdown = ref(false); 
 const router = useRouter(); 
+const token = ref(""); 
+
+if (process.client) {
+  token.value = localStorage.getItem("access_token"); 
+}
 
 // Fetch the products
 const fetchProducts = async () => {
@@ -42,7 +47,7 @@ const handleAddToCart = async (product) => {
   }
 
   loadingProducts.value[product.id] = true;
-  const response = await addToCart(product.id, 1);
+  const response = await addToCart(token.value, product.id, 1);
   if (response) {
     alert("Product added to cart! ✅");
   } else {
@@ -99,6 +104,11 @@ const formatCurrency = (amount) => {
         </div>
        
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <form class="d-flex" role="search" @submit.prevent="fetchProducts">
+            <input v-model="searchQuery" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success" type="submit">Search</button>
+          </form>
+          
           <!-- Login/Logout Icon -->
           <font-awesome-icon 
             :icon="['fas', 'user']" 

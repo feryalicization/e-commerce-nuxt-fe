@@ -44,29 +44,28 @@ const errorMessage = ref("");
 const router = useRouter();
 
 const handleLogin = async () => {
-  errorMessage.value = ""; // Clear previous error message
+  errorMessage.value = ""; 
 
   if (!email.value || !password.value) {
     errorMessage.value = "Please enter both email and password.";
     return;
   }
 
-  // Call the login service
   const response = await loginUser(email.value, password.value);
 
   if (response) {
-    // On successful login, store the access_token in localStorage
-    localStorage.setItem("access_token", response.access_token); // Store the access token
+    localStorage.setItem("access_token", response.access_token); 
 
-    // Optionally handle remember me functionality
     if (rememberMe.value) {
       localStorage.setItem("rememberMe", "true");
     }
 
-    // Redirect to the home page or a dashboard
-    router.push("/");
+    if (response.user.role === "superuser" || response.user.role === "admin") {
+      router.push("/dashboard"); 
+    } else {
+      router.push("/");  
+    }
   } else {
-    // Show error message on failure
     errorMessage.value = "Invalid credentials, please try again.";
   }
 };
