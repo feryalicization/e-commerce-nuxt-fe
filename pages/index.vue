@@ -61,7 +61,7 @@ const toggleDropdown = () => {
 
 const cartPage = () => {
   if (isLoggedIn.value) {
-    router.push({ name: "login" }); 
+    router.push({ name: "cart" }); 
   } else {
     alert("You must login");
     router.push({ name: "login" }); 
@@ -79,6 +79,12 @@ const toggleLogin = () => {
   }
 };
 
+
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount);
+};
+
+
 </script>
 
 <template>
@@ -88,16 +94,11 @@ const toggleLogin = () => {
         <div class="container-fluid">
           <a class="navbar-brand" href="#">
             <img src="https://getbootstrap.com//docs/5.3/assets/brand/bootstrap-logo.svg" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
-            Bootstrap
+            HomePage
           </a>
         </div>
        
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <form class="d-flex" role="search" @submit.prevent="fetchProducts">
-            <input v-model="searchQuery" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-          </form>
-          
           <!-- Login/Logout Icon -->
           <font-awesome-icon 
             :icon="['fas', 'user']" 
@@ -136,7 +137,7 @@ const toggleLogin = () => {
           <img :src="product.image_url" class="card-img-top" alt="..." style="height: 200px; object-fit: cover;">
           <div class="card-body d-flex flex-column">
             <h5 class="card-title">{{ product.name }}</h5>
-            <p class="card-text text-muted flex-grow-1">Price: ${{ product.price }}</p>
+            <p class="card-text text-muted flex-grow-1">Price: {{ formatCurrency(product.price) }}</p>
             <div class="d-flex justify-content-between mt-auto">
               <button @click="fetchProductDetails(product.id)" class="btn btn-primary w-50 me-2">
                 Details
