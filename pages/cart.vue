@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, nextTick } from "vue";
+import { ref, onMounted } from "vue";
 import { getCart, updateCartItem, deleteCartItem } from "@/services/cartService"; 
 import { createOrder } from "@/services/orderService"; 
 
