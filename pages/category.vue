@@ -1,97 +1,94 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { getProducts, updateProduct, createProduct, deleteProduct } from "@/services/productsService";
-import { getCategories } from "@/services/categoryService";
+import { getCategories, createCategory, updateCategory, deleteCategory } from "@/services/categoryService";
 
 const router = useRouter();
-const products = ref([]);
 const categories = ref([]);
 const showEditModal = ref(false);
 const showAddModal = ref(false);
 const token = ref("");
 const searchQuery = ref("");
 
-const selectedProduct = ref({
+const selectedCategory = ref({
   id: null,
   name: "",
   description: "",
-  price: null,
-  stock: null,
-  category_id: null,
-  image_url: "",
 });
 
-const newProduct = ref({
+const newCategory = ref({
   name: "",
   description: "",
-  price: null,
-  stock: null,
-  category_id: null,
-  image_url: "",
 });
 
-
-const fetchProducts = async () => {
+const fetchCategories = async () => {
   token.value = localStorage.getItem("access_token") || "";
-  products.value = await getProducts(searchQuery.value);
+  categories.value = await getCategories(token.value, searchQuery.value);
 };
 
-onMounted(async () => {
-  token.value = localStorage.getItem("access_token") || "";
-  await fetchProducts()
-  categories.value = await getCategories(token.value);
-});
+onMounted(fetchCategories);
 
-const openEditModal = (product) => {
-  selectedProduct.value = { ...product };
+const openEditModal = (category) => {
+  selectedCategory.value = { ...category };
   showEditModal.value = true;
 };
 
 const openAddModal = () => {
-  newProduct.value = { name: "", description: "", price: null, stock: null, category_id: null, image_url: "" };
+  newCategory.value = { name: "", description: "" };
   showAddModal.value = true;
 };
 
-const closeEditModal = () => showEditModal.value = false;
-const closeAddModal = () => showAddModal.value = false;
+const closeEditModal = () => (showEditModal.value = false);
+const closeAddModal = () => (showAddModal.value = false);
 
-const saveProduct = async () => {
-  if (!selectedProduct.value.id) return;
-  
-  const response = await updateProduct(selectedProduct.value.id, selectedProduct.value, token.value);
+const saveCategory = async () => {
+  if (!selectedCategory.value.id) return;
+  const response = await updateCategory(
+    token.value,
+    selectedCategory.value.id,
+    selectedCategory.value.name,
+    selectedCategory.value.description
+  );
+
   if (response) {
-    alert("Product updated successfully!");
+    alert("Category updated successfully!");
     closeEditModal();
-    products.value = await getProducts();
+    categories.value = await getCategories(token.value);
   } else {
-    alert("Failed to update product.");
+    alert("Failed to update category.");
   }
 };
 
-const addProduct = async () => {
-  const response = await createProduct(token.value, newProduct.value);
+
+
+const addCategory = async () => {
+  if (!newCategory.value.name || !newCategory.value.description) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  const response = await createCategory(token.value, newCategory.value.name, newCategory.value.description);
   if (response) {
-    alert("Product created successfully!");
+    alert("Category created successfully!");
     closeAddModal();
-    products.value = await getProducts();
+    await fetchCategories();
   } else {
-    alert("Failed to create product.");
+    alert("Failed to create category.");
   }
 };
 
-const removeProduct = async (productId) => {
-  if (confirm("Are you sure you want to delete this product?")) {
-    const response = await deleteProduct(token.value, productId);
+
+const removeCategory = async (categoryId) => {
+  if (confirm("Are you sure you want to delete this category?")) {
+    const response = await deleteCategory(token.value, categoryId);
     if (response) {
-      alert("Product deleted successfully!");
-      products.value = await getProducts();
+      alert("Category deleted successfully!");
+      await fetchCategories();
     } else {
-      alert("Failed to delete product.");
+      alert("Failed to delete category.");
     }
   }
 };
-
 </script>
 
 <template>
@@ -99,17 +96,17 @@ const removeProduct = async (productId) => {
     <h2>Admin Dashboard</h2>
     <ul class="nav justify-content-center">
       <li class="nav-item">
-        <a class="nav-link active" href="#" @click.prevent="router.push('/products')"><strong><h5>Products</h5></strong></a>
+        <a class="nav-link" href="#" @click.prevent="router.push('/products')"><strong>Products</strong></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#" @click.prevent="router.push('/category')"><strong><h5>Category Products</h5></strong></a>
+        <a class="nav-link active" href="#" @click.prevent="router.push('/category')"><strong>Category Products</strong></a>
       </li>
     </ul>
 
     <br /><br />
     <h5>Category Products</h5>
     <div class="d-flex justify-content-between align-items-center">
-      <form class="d-flex" role="search" @submit.prevent="fetchProducts">
+      <form class="d-flex" role="search" @submit.prevent="fetchCategories">
         <input v-model="searchQuery" class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
         <button class="btn btn-outline-success" type="submit">Search</button>
       </form>
@@ -123,71 +120,41 @@ const removeProduct = async (productId) => {
           <th scope="col">No</th>
           <th scope="col">Name</th>
           <th scope="col">Description</th>
-          <th scope="col">Price</th>
-          <th scope="col">Stock</th>
-          <th scope="col">Category</th>
-          <th scope="col">Image</th>
-          <th scope="col">Action</th>
+          <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(product, index) in products" :key="product.id" style="text-align: center;">
+        <tr v-for="(category, index) in categories" :key="category.id" style="text-align: center;">
           <th scope="row">{{ index + 1 }}</th>
-          <td>{{ product.name }}</td>
-          <td>{{ product.description }}</td>
-          <td>{{ product.price }}</td>
-          <td>{{ product.stock }}</td>
-          <td>{{ product.category }}</td>
+          <td>{{ category.name }}</td>
+          <td>{{ category.description }}</td>
           <td>
-            <img :src="product.image_url" alt="Product Image" width="50" height="50" />
-          </td>
-          <td>
-            <div class="d-flex justify-content-between mt-auto">
-              <button class="btn btn-primary w-50 me-2" @click="openEditModal(product)">Edit</button>
-              <button class="btn btn-danger w-50" @click="removeProduct(product.id)">Delete</button>
+            <div class="d-flex justify-content-between">
+              <button class="btn btn-primary w-50 me-2" @click="openEditModal(category)">Edit</button>
+              <button class="btn btn-danger w-50" @click="removeCategory(category.id)">Delete</button>
             </div>
           </td>
         </tr>
       </tbody>
     </table>
 
-    <!-- Edit Product Modal -->
+    <!-- Edit Category Modal -->
     <div v-if="showEditModal" class="modal fade show d-block" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Edit Product</h5>
+            <h5 class="modal-title">Edit Category</h5>
             <button type="button" class="btn-close" @click="closeEditModal"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="saveProduct">
-              <div class="mb-3">
-                <label class="form-label">Category</label>
-                <select v-model="selectedProduct.category_id" class="form-control" required>
-                  <option v-for="category in categories" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
-              </div>
+            <form @submit.prevent="saveCategory">
               <div class="mb-3">
                 <label class="form-label">Name</label>
-                <input v-model="selectedProduct.name" type="text" class="form-control" required />
+                <input v-model="selectedCategory.name" type="text" class="form-control" required />
               </div>
               <div class="mb-3">
                 <label class="form-label">Description</label>
-                <textarea v-model="selectedProduct.description" class="form-control" required></textarea>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Price</label>
-                <input v-model="selectedProduct.price" type="number" class="form-control" required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Stock</label>
-                <input v-model="selectedProduct.stock" type="number" class="form-control" required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Image</label>
-                <input v-model="selectedProduct.image_url" type="text" class="form-control" required />
+                <textarea v-model="selectedCategory.description" class="form-control" required></textarea>
               </div>
               <div class="d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary w-45" @click="closeEditModal">Close</button>
@@ -199,45 +166,25 @@ const removeProduct = async (productId) => {
       </div>
     </div>
 
-    <!-- Add Product Modal -->
+    <!-- Add Category Modal -->
     <div v-if="showAddModal" class="modal fade show d-block" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Add Product</h5>
+            <h5 class="modal-title">Add Category</h5>
             <button type="button" class="btn-close" @click="closeAddModal"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="addProduct">
-              <div class="mb-3">
-                <label class="form-label">Category</label>
-                <select v-model="newProduct.category_id" class="form-control" required>
-                  <option v-for="category in categories" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                  </option>
-                </select>
-              </div>
+            <form @submit.prevent="addCategory">
               <div class="mb-3">
                 <label class="form-label">Name</label>
-                <input v-model="newProduct.name" type="text" class="form-control" required />
+                <input v-model="newCategory.name" type="text" class="form-control" required />
               </div>
               <div class="mb-3">
                 <label class="form-label">Description</label>
-                <textarea v-model="newProduct.description" class="form-control" required></textarea>
+                <textarea v-model="newCategory.description" class="form-control" required></textarea>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Price</label>
-                <input v-model="newProduct.price" type="number" class="form-control" required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Stock</label>
-                <input v-model="newProduct.stock" type="number" class="form-control" required />
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Image</label>
-                <input v-model="newProduct.image_url" type="text" class="form-control" required />
-              </div>
-              <button type="submit" class="btn btn-success w-100">Create Product</button>
+              <button type="submit" class="btn btn-success w-100">Create Category</button>
             </form>
           </div>
         </div>
