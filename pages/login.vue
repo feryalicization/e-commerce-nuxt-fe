@@ -1,3 +1,44 @@
+
+<script setup>
+  import { ref } from "vue";
+  import { loginUser } from "@/services/userService"; 
+  import { useRouter } from "vue-router";
+
+  const email = ref("");
+  const password = ref("");
+  const rememberMe = ref(false);
+  const errorMessage = ref("");
+  const router = useRouter();
+
+  const handleLogin = async () => {
+    errorMessage.value = ""; 
+
+    if (!email.value || !password.value) {
+      errorMessage.value = "Please enter both email and password.";
+      return;
+    }
+
+    const response = await loginUser(email.value, password.value);
+
+    if (response) {
+      localStorage.setItem("access_token", response.access_token); 
+
+      if (rememberMe.value) {
+        localStorage.setItem("rememberMe", "true");
+      }
+
+      if (response.user.role === "superuser" || response.user.role === "admin") {
+        router.push("/products"); 
+      } else {
+        router.push("/");  
+      }
+    } else {
+      errorMessage.value = "Invalid credentials, please try again.";
+    }
+  };
+</script>
+
+
 <template>
     <div class="container mt-5">
       <h2>Login</h2>
@@ -32,45 +73,7 @@
     </div>
   </template>
   
-  <script setup>
-import { ref } from "vue";
-import { loginUser } from "@/services/userService"; // Assuming you have userService
-import { useRouter } from "vue-router";
-
-const email = ref("");
-const password = ref("");
-const rememberMe = ref(false);
-const errorMessage = ref("");
-const router = useRouter();
-
-const handleLogin = async () => {
-  errorMessage.value = ""; 
-
-  if (!email.value || !password.value) {
-    errorMessage.value = "Please enter both email and password.";
-    return;
-  }
-
-  const response = await loginUser(email.value, password.value);
-
-  if (response) {
-    localStorage.setItem("access_token", response.access_token); 
-
-    if (rememberMe.value) {
-      localStorage.setItem("rememberMe", "true");
-    }
-
-    if (response.user.role === "superuser" || response.user.role === "admin") {
-      router.push("/dashboard"); 
-    } else {
-      router.push("/");  
-    }
-  } else {
-    errorMessage.value = "Invalid credentials, please try again.";
-  }
-};
-</script>
-
+ 
   
   <style scoped>
   .container {

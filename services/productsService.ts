@@ -30,3 +30,63 @@ export const getProductById = async (id: number): Promise<any> => {
     return null; 
   }
 };
+
+
+export const updateProduct = async (productId: number, productData: any, token: string): Promise<any> => {
+  try {
+    const response = await axios.put(
+      `${API_URL}/products/${productId}`,
+      productData,
+      {
+        headers: {
+          accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("Product Updated:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return null;
+  }
+};
+
+
+export const createProduct = async (token: string, productData: any): Promise<any> => {
+  try {
+    const response = await axios.post(`${API_URL}/products`, productData, {
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("Product Created:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating product:", error);
+    return null;
+  }
+};
+
+
+export const deleteProduct = async (token: string, productId: number): Promise<any> => {
+  try {
+    const response = await axios.delete(`${API_URL}/products/${productId}`, {
+      headers: {
+        accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log(`Product ${productId} deleted successfully!`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return null;
+  }
+};
