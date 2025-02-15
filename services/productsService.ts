@@ -2,10 +2,10 @@ import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export const getProducts = async (search = "") => {
+export const getProducts = async (search = "",  min_price?: number, max_price?: number) => {
   try {
     const response = await axios.get(`${API_URL}/products`, {
-      params: { search },
+      params: { search, min_price, max_price },
       headers: { accept: "application/json" },
     });
 

@@ -11,6 +11,8 @@ const showEditModal = ref(false);
 const showAddModal = ref(false);
 const token = ref("");
 const searchQuery = ref("");
+const minPrice = ref(null);
+const maxPrice = ref(null);
 
 const selectedProduct = ref({
   id: null,
@@ -34,7 +36,7 @@ const newProduct = ref({
 
 const fetchProducts = async () => {
   token.value = localStorage.getItem("access_token") || "";
-  products.value = await getProducts(searchQuery.value);
+  products.value = await getProducts(searchQuery.value, minPrice.value, maxPrice.value);
 };
 
 onMounted(async () => {
@@ -109,6 +111,14 @@ const removeProduct = async (productId) => {
     <br /><br />
     <h5>List Products</h5>
     <div class="d-flex justify-content-between align-items-center">
+
+      <form class="d-flex" role="filter" @submit.prevent="fetchProducts">
+        <input v-model="minPrice" class="form-control me-2" type="number" placeholder="Min Price" />
+        <input v-model="maxPrice" class="form-control me-2" type="number" placeholder="Max Price" />
+        <button class="btn btn-outline-primary" type="submit">Filter</button>
+      </form>
+
+
       <form class="d-flex" role="search" @submit.prevent="fetchProducts">
         <input v-model="searchQuery" class="form-control me-2" type="search" placeholder="Search" aria-label="Search" />
         <button class="btn btn-outline-success" type="submit">Search</button>

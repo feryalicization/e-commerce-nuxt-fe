@@ -13,6 +13,8 @@ const isLoggedIn = ref(false);
 const showDropdown = ref(false); 
 const router = useRouter(); 
 const token = ref(""); 
+const minPrice = ref(null);
+const maxPrice = ref(null);
 
 if (process.client) {
   token.value = localStorage.getItem("access_token"); 
@@ -20,7 +22,7 @@ if (process.client) {
 
 // Fetch the products
 const fetchProducts = async () => {
-  products.value = await getProducts(searchQuery.value);
+  products.value = await getProducts(searchQuery.value, minPrice.value, maxPrice.value);
 };
 
 // Fetch product details
@@ -104,6 +106,12 @@ const formatCurrency = (amount) => {
         </div>
        
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <form class="d-flex" role="filter" @submit.prevent="fetchProducts">
+            <input v-model="minPrice" class="form-control me-2" type="number" placeholder="Min Price" />
+            <input v-model="maxPrice" class="form-control me-2" type="number" placeholder="Max Price" />
+            <button class="btn btn-outline-primary" type="submit">Filter</button>
+          </form>
+
           <form class="d-flex" role="search" @submit.prevent="fetchProducts">
             <input v-model="searchQuery" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
             <button class="btn btn-outline-success" type="submit">Search</button>
