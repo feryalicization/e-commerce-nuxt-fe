@@ -9,6 +9,8 @@ const showEditModal = ref(false);
 const showAddModal = ref(false);
 const token = ref("");
 const searchQuery = ref("");
+const showDropdown = ref(false); 
+const isLoggedIn = ref(false);
 
 const selectedCategory = ref({
   id: null,
@@ -26,7 +28,11 @@ const fetchCategories = async () => {
   categories.value = await getCategories(token.value, searchQuery.value);
 };
 
-onMounted(fetchCategories);
+onMounted(() => {
+  fetchCategories();
+  checkUserLogin();
+});
+
 
 const openEditModal = (category) => {
   selectedCategory.value = { ...category };
@@ -89,11 +95,83 @@ const removeCategory = async (categoryId) => {
     }
   }
 };
+
+
+
+const checkUserLogin = () => {
+  const token = localStorage.getItem("access_token"); 
+  isLoggedIn.value = token !== null; 
+};
+
+const toggleDropdown = () => {
+  console.log('ferys')
+  if (isLoggedIn.value) {
+    showDropdown.value = !showDropdown.value; 
+  } else {
+    router.push({ name: "login" }); 
+  }
+};
+
+const toggleLogin = async () => {
+  if (!isLoggedIn.value) {
+    router.push("/login"); 
+  } else {
+    localStorage.removeItem("access_token"); 
+    isLoggedIn.value = false; 
+    showDropdown.value = false; 
+    alert("You have been logged out.");
+
+    window.location.href = "/login";
+  }
+};
+
 </script>
 
 <template>
   <div class="container mt-5">
-    <h2>Admin Dashboard</h2>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">
+            <img src="https://getbootstrap.com//docs/5.3/assets/brand/bootstrap-logo.svg" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
+            Admin Dashboard
+          </a>
+        </div>
+       
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <div class="position-relative d-inline-block">
+            <font-awesome-icon 
+              :icon="['fas', 'user']" 
+              size="2x"
+              class="cursor-pointer text-primary ms-3" 
+              @click="toggleDropdown"
+              role="button" 
+              tabindex="0" 
+            />
+
+            <div v-if="isLoggedIn">
+              <div v-show="showDropdown" class="dropdown-menu show position-absolute start-0 mt-2">
+                <a class="dropdown-item" href="#" @click="toggleLogin">Logout</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cart Icon -->
+          <router-link to="/">
+            <font-awesome-icon 
+            :icon="['fas', 'house']" 
+              size="2x"
+              class="cursor-pointer text-warning ms-3" 
+              @click="homePage"
+              role="button" 
+              tabindex="0" 
+            />
+          </router-link>
+      
+        </div>
+      </div>
+    </nav>
+
     <ul class="nav justify-content-center">
       <li class="nav-item">
         <a class="nav-link" href="#" @click.prevent="router.push('/products')"><strong>Products</strong></a>

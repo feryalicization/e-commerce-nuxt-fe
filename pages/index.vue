@@ -118,14 +118,23 @@ const formatCurrency = (amount) => {
           </form>
           
           <!-- Login/Logout Icon -->
-          <font-awesome-icon 
-            :icon="['fas', 'user']" 
-            size="2x"
-            class="cursor-pointer text-primary ms-3" 
-            @click="toggleDropdown"
-            role="button" 
-            tabindex="0" 
-          />
+          <div class="position-relative d-inline-block">
+            <font-awesome-icon 
+              :icon="['fas', 'user']" 
+              size="2x"
+              class="cursor-pointer text-primary ms-3" 
+              @click="toggleDropdown"
+              role="button" 
+              tabindex="0" 
+            />
+
+            <div v-if="isLoggedIn">
+              <div v-show="showDropdown" class="dropdown-menu show position-absolute start-0 mt-2">
+                <a class="dropdown-item" href="#" @click="toggleLogin">Logout</a>
+              </div>
+            </div>
+          </div>
+
 
           <!-- Cart Icon -->
           <font-awesome-icon 
@@ -137,13 +146,6 @@ const formatCurrency = (amount) => {
             tabindex="0" 
           />
 
-
-          <!-- Dropdown Button: Only visible if logged in -->
-          <div v-if="isLoggedIn">
-            <div v-show="showDropdown" class="dropdown-menu show position-absolute" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="#" @click="toggleLogin">Logout</a>
-          </div>
-          </div>
         </div>
       </div>
     </nav>

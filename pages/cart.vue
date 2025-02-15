@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { getCart, updateCartItem, deleteCartItem } from "@/services/cartService"; 
 import { createOrder } from "@/services/orderService"; 
 
@@ -8,6 +8,7 @@ const isLoggedIn = ref(false);
 const isLoading = ref(false); 
 const error = ref(""); 
 const token = ref(""); 
+const showDropdown = ref(false); 
 
 if (process.client) {
   token.value = localStorage.getItem("access_token"); 
@@ -110,6 +111,28 @@ const formatCurrency = (amount) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount);
 };
 
+const toggleDropdown = () => {
+  console.log('ferys')
+  if (isLoggedIn.value) {
+    showDropdown.value = !showDropdown.value; 
+  } else {
+    router.push({ name: "login" }); 
+  }
+};
+
+const toggleLogin = async () => {
+  if (!isLoggedIn.value) {
+    router.push("/login"); 
+  } else {
+    localStorage.removeItem("access_token"); 
+    isLoggedIn.value = false; 
+    showDropdown.value = false; 
+    alert("You have been logged out.");
+
+    window.location.href = "/";
+  }
+};
+
 </script>
 
 <template>
@@ -130,33 +153,35 @@ const formatCurrency = (amount) => {
             <button class="btn btn-outline-success" type="submit">Search</button>
           </form>
           
-          <!-- Login/Logout Icon -->
-          <font-awesome-icon 
-            :icon="['fas', 'user']" 
-            size="2x"
-            class="cursor-pointer text-primary ms-3" 
-            @click="toggleDropdown"
-            role="button" 
-            tabindex="0" 
-          />
+          <div class="position-relative d-inline-block">
+            <font-awesome-icon 
+              :icon="['fas', 'user']" 
+              size="2x"
+              class="cursor-pointer text-primary ms-3" 
+              @click="toggleDropdown"
+              role="button" 
+              tabindex="0" 
+            />
+
+            <div v-if="isLoggedIn">
+              <div v-show="showDropdown" class="dropdown-menu show position-absolute start-0 mt-2">
+                <a class="dropdown-item" href="#" @click="toggleLogin">Logout</a>
+              </div>
+            </div>
+          </div>
 
           <!-- Cart Icon -->
-          <font-awesome-icon 
-          :icon="['fas', 'house']" 
-            size="2x"
-            class="cursor-pointer text-warning ms-3" 
-            @click="homePage"
-            role="button" 
-            tabindex="0" 
-          />
-
-
-          <!-- Dropdown Button: Only visible if logged in -->
-          <div v-if="isLoggedIn">
-            <div v-show="showDropdown" class="dropdown-menu show position-absolute" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="#" @click="toggleLogin">Logout</a>
-          </div>
-          </div>
+          <router-link to="/">
+            <font-awesome-icon 
+            :icon="['fas', 'house']" 
+              size="2x"
+              class="cursor-pointer text-warning ms-3" 
+              @click="homePage"
+              role="button" 
+              tabindex="0" 
+            />
+          </router-link>
+      
         </div>
       </div>
     </nav>
@@ -171,6 +196,8 @@ const formatCurrency = (amount) => {
       <p>{{ error }}</p>
     </div>
 
+    <br><br>
+    
     <!-- Cart Items -->
     <div v-if="cartItems.length > 0" class="row">
       <div v-for="item in cartItems" :key="item.id" class="col-md-4 mb-4">
