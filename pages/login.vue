@@ -1,7 +1,7 @@
 
 <script setup>
   import { ref } from "vue";
-  import { loginUser } from "@/services/userService"; 
+  import { loginUser, registerUser } from "@/services/userService"; 
   import { useRouter } from "vue-router";
 
   const email = ref("");
@@ -62,6 +62,9 @@
             id="password"
             placeholder="Enter your password"
           />
+        </div>
+        <div class="text-end mt-1">
+          <router-link to="/register" class="text-primary">Don't have an account?</router-link>
         </div>
         <div class="mb-3 form-check">
           <input type="checkbox" class="form-check-input" id="rememberMe" v-model="rememberMe" />
